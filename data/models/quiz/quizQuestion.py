@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from .MediaItem import MediaItem
-from .QuizAnswerOption import QuizAnswerOption
+from extensions import getValueOrDefault
+from . import MediaItem
+from . import QuizAnswerOption
 
 
 @dataclass
@@ -15,12 +16,12 @@ class QuizQuestion:
     @staticmethod
     def fromDict(value: dict):
         return QuizQuestion(
-            id=value["id"],
-            question=value["question"],
-            hasSingleAnswer=value["hasSingleAnswer"],
-            points=value["points"],
-            mediaItems=list(map(lambda x: MediaItem.fromDict(x), value["mediaItems"])),
-            answerOptions=list(map(lambda x: QuizAnswerOption.fromDict(x), value["answerOptions"])),
+            id=getValueOrDefault(value, "id", ""),
+            question=getValueOrDefault(value, "question", ""),
+            hasSingleAnswer=getValueOrDefault(value, "hasSingleAnswer", True),
+            points=getValueOrDefault(value, "points", 0),
+            mediaItems=list(map(lambda x: MediaItem.fromDict(x), getValueOrDefault(value, "mediaItems", []))),
+            answerOptions=list(map(lambda x: QuizAnswerOption.fromDict(x), getValueOrDefault(value, "answerOptions", []))),
         )
 
     def toDict(self) -> dict:

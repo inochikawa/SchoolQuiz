@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from extensions import getValueOrDefault
 
 
 @dataclass
@@ -9,7 +10,10 @@ class QuizAnswerOption:
 
     @staticmethod
     def fromDict(value: dict):
-        return QuizAnswerOption(id=value["id"], text=value["text"], isCorrect=value["isCorrect"])
+        return QuizAnswerOption(
+            id=getValueOrDefault(value, "id", ""),
+            text=getValueOrDefault(value, "text", ""),
+            isCorrect=getValueOrDefault(value, "isCorrect", False))
 
     def toDict(self) -> dict:
         return {

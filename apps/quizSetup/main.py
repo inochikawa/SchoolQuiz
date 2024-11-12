@@ -7,13 +7,19 @@ from data.models.quiz.MediaItemType import MediaItemType
 import json
 import yaml
 from uuid import uuid4
+import argparse
+
+from extensions import FileExtensions
 
 
-def main():
-    quizTemplate = createQuizTemplate(totalQuestions=6, defaultNumberOfAnswers=4, classCode="8A")
-    print(yaml.dump(quizTemplate, indent=4, sort_keys=False))
+def parseArgs() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Setup quiz')
 
-    return
+    parser.add_argument("--saveNewQuiz", dest="saveNewQuiz", help="Provide a YAML structure of quiz to save into DB", required=False, action='store_true')
+
+    parsedArgs = parser.parse_args()
+
+    return parsedArgs
 
 
 def createQuizTemplate(totalQuestions: int, defaultNumberOfAnswers: int, classCode: str) -> dict:
@@ -28,6 +34,33 @@ def createQuizTemplate(totalQuestions: int, defaultNumberOfAnswers: int, classCo
             answerOptions=[QuizAnswerOption(id="", text="REPLACE", isCorrect=False)]
         )]
     ).toDict()
+
+
+def saveNewQuiz(yamlPath: str) -> None:
+    quizService = QuizService()
+    content = FileExtensions.readFile(yamlPath)
+    quizData = yaml.safe_load(content)
+    quiz = Quiz.fromDict(quizData)
+
+    quiz.id = str(uuid4())
+
+    for question in quiz.questions:
+        question.id = str(uuid4())
+        for answerOption in question.answerOptions:
+            answerOption.id = str(uuid4())
+
+    quizService.saveQuiz(quiz)
+    pass
+
+
+def main():
+    args = parseArgs()
+
+    if args.saveNewQuiz:
+        saveNewQuiz(input("Input path to YAML: "))
+        return
+
+    return
 
 
 if __name__ == "__main__":

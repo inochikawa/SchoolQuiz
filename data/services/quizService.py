@@ -1,16 +1,16 @@
-from data.cosmosDb.QuizCosmosClient import QuizCosmosClient
-from data.models.quiz.Quiz import Quiz
+from data.cosmosDb import QuizCosmosClient
+from data.models.quiz import Quiz
 
 
 class QuizService:
-    __cosmosClient: QuizCosmosClient = QuizCosmosClient()
+    _cosmosClient: QuizCosmosClient = QuizCosmosClient()
 
     def saveQuiz(self, quiz: Quiz) -> None:
-        container = self.__cosmosClient.getQuizContainerClient()
+        container = self._cosmosClient.getQuizContainerClient()
         container.upsert_item(quiz.toDict())
 
     def getAll(self) -> list[Quiz]:
-        container = self.__cosmosClient.getQuizContainerClient()
+        container = self._cosmosClient.getQuizContainerClient()
 
         result = []
         items = container.read_all_items()

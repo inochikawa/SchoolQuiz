@@ -1,0 +1,67 @@
+classCode: '8А'
+questions:
+  - question: 'Що вивчає статистика?'
+    answerOptions:
+      - text: 'Збирання, організування, аналіз і представлення даних'
+        isCorrect: true
+      - text: 'Моделювання фізичних явищ'
+        isCorrect: false
+      - text: 'Створення наукових моделей'
+        isCorrect: false
+      - text: 'Планування експериментів у фізиці'
+        isCorrect: false
+
+  - question: 'Що таке генеральна сукупність у статистиці?'
+    answerOptions:
+      - text: 'Група даних, що не пов’язана з предметом дослідження'
+        isCorrect: false
+      - text: 'Сукупність даних, отриманих із вибірки'
+        isCorrect: false
+      - text: 'Вибірка з генеральної сукупності'
+        isCorrect: false
+      - text: 'Вся група людей або об’єктів, що є предметом дослідження'
+        isCorrect: true
+
+  - question: 'Як називається метод, що дозволяє узагальнити дані з вибірки?'
+    answerOptions:
+      - text: 'Індуктивна статистика'
+        isCorrect: true
+      - text: 'Описова статистика'
+        isCorrect: false
+      - text: 'Аналітична статистика'
+        isCorrect: false
+      - text: 'Експериментальна статистика'
+        isCorrect: false
+
+  - question: 'Що таке помилка I роду у статистиці?'
+    answerOptions:
+      - text: 'Помилка у вимірюванні даних'
+        isCorrect: false
+      - text: 'Хибне підтвердження істинності гіпотези'
+        isCorrect: false
+      - text: 'Хибне відхилення нульової гіпотези'
+        isCorrect: true
+      - text: 'Відсутність взаємозв’язку між даними'
+        isCorrect: false
+
+  - question: 'Яка основна мета описової статистики?'
+    answerOptions:
+      - text: 'Загальна оцінка кількості даних'
+        isCorrect: false
+      - text: 'Визначення взаємозв’язків між даними'
+        isCorrect: false
+      - text: 'Узагальнення даних для представлення основних властивостей'
+        isCorrect: true
+      - text: 'Розробка математичних моделей'
+        isCorrect: false
+
+  - question: 'Що таке вибіркове дослідження у статистиці?'
+    answerOptions:
+      - text: 'Дослідження всієї генеральної сукупності'
+        isCorrect: false
+      - text: 'Застосування вибірки для представлення сукупності'
+        isCorrect: true
+      - text: 'Дослідження, що використовує тільки експериментальні дані'
+        isCorrect: false
+      - text: 'Тестування на основі альтернативної гіпотези'
+        isCorrect: false
