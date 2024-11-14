@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from . import MediaItemType
+from .mediaItemType import MediaItemType
 
 
 @dataclass

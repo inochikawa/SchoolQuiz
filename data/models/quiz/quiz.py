@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from extensions import getValueOrDefault
-from . import QuizQuestion
+from .quizQuestion import QuizQuestion
 
 
 @dataclass

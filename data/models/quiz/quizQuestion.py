@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from extensions import getValueOrDefault
-from . import MediaItem
-from . import QuizAnswerOption
+from .mediaItem import MediaItem
+from .quizAnswerOption import QuizAnswerOption
 
 
 @dataclass

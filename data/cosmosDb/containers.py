@@ -1,6 +1,6 @@
 class QuizContainer:
-    name = "quizes"
-    partitionKey = "/classCode"
+    name = "quizzes"
+    partitionKey = "/gradeYearId"
 
 
 class GradeYearsContainer:
@@ -15,4 +15,4 @@ class UserAnswersContainer:
 
 class UserProfileContainer:
     name = "user-profiles"
-    partitionKey = "/yearGradeId"
+    partitionKey = "/gradeYearId"

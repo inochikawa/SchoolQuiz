@@ -14,14 +14,14 @@ class GradeYear:
     def fromDict(value: dict):
         return GradeYear(
             code=value["code"],
-            academicYear=value["academicYear"],
+            academicYear=int(value["academicYear"]),
         )
 
     def toDict(self) -> dict:
         return {
             "id": self.id,
             "code": self.code,
-            "academicYear": self.academicYear,
+            "academicYear": str(self.academicYear),
         }
 
     def __str__(self):
