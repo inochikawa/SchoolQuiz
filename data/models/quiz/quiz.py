@@ -30,16 +30,16 @@ class Quiz:
 
     @staticmethod
     def fromDict(value: dict):
-        availableToDateString = value.get("availableToDate", "")
-        availableFromDateString = value.get("availableFromDate", "")
+        availableToDateString = value.get("availableToDate")
+        availableFromDateString = value.get("availableFromDate")
 
         return Quiz(
             id=value.get("id", ""),
             gradeYearId=value.get("gradeYearId", ""),
             topic=value.get("topic", ""),
             questions=list(map(lambda x: QuizQuestion.fromDict(x), value.get("questions", []))),
-            availableToDate=datetime.fromisoformat(availableToDateString) if availableToDateString != "" else None,
-            availableFromDate=datetime.fromisoformat(availableFromDateString) if availableFromDateString != "" else None
+            availableToDate=datetime.fromisoformat(availableToDateString) if availableToDateString else None,
+            availableFromDate=datetime.fromisoformat(availableFromDateString) if availableFromDateString else None
         )
 
     def toDict(self) -> dict:
@@ -48,8 +48,8 @@ class Quiz:
             "gradeYearId": self.gradeYearId,
             "topic": self.topic,
             "questions": list(map(lambda x: x.toDict(), self.questions)),
-            "availableToDate": self.availableToDate.isoformat(),
-            "availableFromDate": self.availableFromDate.isoformat(),
+            "availableToDate": self.availableToDate.isoformat() if self.availableToDate else None,
+            "availableFromDate": self.availableFromDate.isoformat() if self.availableFromDate else None,
         }
 
 

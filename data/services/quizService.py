@@ -10,6 +10,7 @@ class QuizService:
         container = self._cosmosClient.getContainer(QuizContainer.name)
         container.upsert_item(quiz.toDict())
 
+
     def searchByGradeYear(self, gradeYearId: str) -> list[Quiz]:
         container = self._cosmosClient.getContainer(QuizContainer.name)
 
