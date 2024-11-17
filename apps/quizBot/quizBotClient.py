@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, MenuButtonCommands
 from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 
+from data.bilders import CompletedQuizBuilder
 from data.models import UserProfile, UserAnswer
 from data.models.quiz import Quiz, CompletedQuiz
 from data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
-from data.services.completedQuizBuilder import CompletedQuizBuilder
 from extensions import readFile, writeToFile
 import yaml
 

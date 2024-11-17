@@ -1,1 +1,2 @@
-from userProfileBuilder import UserProfileBuilder
+from .userProfileBuilder import UserProfileBuilder
+from .completedQuizBuilder import CompletedQuizBuilder
