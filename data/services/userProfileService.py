@@ -1,3 +1,5 @@
+from azure.cosmos import PartitionKey
+
 from data.cosmosDb import QuizCosmosClient, UserProfileContainer
 from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
 from data.models import UserProfile
@@ -10,6 +12,10 @@ class UserProfileService:
     def save(self, item: UserProfile) -> None:
         container = self._cosmosClient.getContainer(UserProfileContainer.name)
         container.upsert_item(item.toDict())
+
+    def delete(self, id: str, gradeYearId: str) -> None:
+        container = self._cosmosClient.getContainer(UserProfileContainer.name)
+        container.delete_item(id, partition_key=gradeYearId)
 
     def get(self, userId: str, gradeYearId: str) -> UserProfile | None:
         container = self._cosmosClient.getContainer(UserProfileContainer.name)

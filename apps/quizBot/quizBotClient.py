@@ -148,11 +148,14 @@ class QuizBotClient:
             await update.effective_message.reply_text(text=f"Хм.. Схоже {gradeYearCode} не існує 🤔. Спробуй ще раз.", reply_markup=keyboard)
             return BotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID
 
+        self._userProfileService.delete(userProfile.id, userProfile.gradeYearId)
         userProfile.gradeYearId = gradeYear.id
         self._userProfileService.save(userProfile)
 
-        buttons = [[KeyboardButton(text=userProfile.firstName)]]
-        keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
+        keyboard: ReplyKeyboardMarkup | None = None
+        if userProfile.firstName:
+            buttons = [[KeyboardButton(text=userProfile.firstName)]]
+            keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
 
         await update.effective_message.reply_text(text=f"Тепер вкажи яке твоє ім'я", reply_markup=keyboard)
 
@@ -164,8 +167,12 @@ class QuizBotClient:
 
         self._userProfileService.save(userProfile)
 
-        buttons = [[KeyboardButton(text=userProfile.lastName)]]
-        keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
+        keyboard: ReplyKeyboardMarkup | None = None
+
+        if userProfile.lastName:
+            buttons = [[KeyboardButton(text=userProfile.lastName)]]
+            keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
+
         await update.effective_message.reply_text(text=f"І яке твоє прізвище?", reply_markup=keyboard)
 
         return BotUserSetupState.UserSetupState.ASK_FOR_LAST_NAME
