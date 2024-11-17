@@ -34,15 +34,30 @@ class CompletedQuizQuestion:
 class CompletedQuiz:
     id: str
     userId: str
+    topic: str
     completedDate: datetime
     questions: list[CompletedQuizQuestion]
     mark: int
+
+    @property
+    def fancyMarkSign(self) -> str:
+        if 0 <= self.mark < 6:
+            return "💀"
+
+        if 6 <= self.mark < 8:
+            return "🤔"
+
+        if 8 <= self.mark < 10:
+            return "👌"
+
+        return "🔥"
 
     @staticmethod
     def fromDict(value: dict):
         return CompletedQuiz(
             id=value.get("id", ""),
             userId=value.get("userId", ""),
+            topic=value.get("topic", ""),
             mark=value.get("mark", 0),
             completedDate=datetime.fromisoformat(value.get("completedDate")),
             questions=[CompletedQuizQuestion.fromDict(x) for x in value.get("questions", [])]
@@ -52,6 +67,7 @@ class CompletedQuiz:
         return {
             "id": self.id,
             "userId": self.userId,
+            "topic": self.topic,
             "mark": self.mark,
             "completedDate": self.completedDate.isoformat(),
             "questions": [x.toDict() for x in self.questions]

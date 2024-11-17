@@ -18,6 +18,7 @@ class CompletedQuizBuilder:
         return CompletedQuiz(
             id=quiz.id,
             userId=userId,
+            topic=quiz.topic,
             completedDate=datetime.now(tz=timezone.utc),
             mark=getQuizMark(quiz, userAnswers),
             questions=[CompletedQuizQuestion(

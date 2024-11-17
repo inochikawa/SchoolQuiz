@@ -40,40 +40,51 @@ class QuizBotClient:
                 CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler)
             ],
             states={
-                QuizBotUserSetupState.HOME: [
+                BotUserSetupState.HOME: [
                     MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._helpCommandHandler),
                     CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler),
                     CommandHandler(BotCommand.USER_SETUP, self._userSetupCommandHandler),
                     CommandHandler(BotCommand.WHO_AM_I, self._whoAmICommandHandler),
-                    CommandHandler(BotCommand.QUIZ, callback=self._showQuizzesCommandHandler)
+                    CommandHandler(BotCommand.QUIZ, callback=self._showQuizzesCommandHandler),
+                    CommandHandler(BotCommand.COMPLETED_QUIZZES, callback=self._showCompletedQuizzesCommandHandler)
                 ],
-                QuizBotUserSetupState.USER_SETUP: [ConversationHandler(
+                BotUserSetupState.USER_SETUP: [ConversationHandler(
                     entry_points=[MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectGradeYearIdCommandHandler)],
                     states={
-                        QuizBotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID: [
+                        BotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID: [
                             MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectGradeYearIdCommandHandler)
                         ],
-                        QuizBotUserSetupState.UserSetupState.ASK_FOR_FIRST_NAME: [
+                        BotUserSetupState.UserSetupState.ASK_FOR_FIRST_NAME: [
                             MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectUserFirstNameCommandHandler)
                         ],
-                        QuizBotUserSetupState.UserSetupState.ASK_FOR_LAST_NAME: [
+                        BotUserSetupState.UserSetupState.ASK_FOR_LAST_NAME: [
                             MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectUserLastNameCommandHandler)
                         ],
                     },
                     fallbacks=[],
                     map_to_parent={
-                        QuizBotUserSetupState.UserSetupState.USER_IS_CONFIGURED: QuizBotUserSetupState.HOME
+                        BotUserSetupState.UserSetupState.USER_IS_CONFIGURED: BotUserSetupState.HOME
                     }
                 )],
-                QuizBotUserSetupState.QUIZ: [ConversationHandler(
-                    entry_points=[MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectQuizCommandHandler)],
+                BotUserSetupState.QUIZ: [ConversationHandler(
+                    entry_points=[
+                        MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectQuizCommandHandler),
+                        CommandHandler(BotCommand.Quiz.EXIT, callback=self._exitFromQuizCommandHandler)
+                    ],
                     states={
-                        QuizBotUserSetupState.QuizState.SELECT_QUIZ: [MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectQuizCommandHandler)],
-                        QuizBotUserSetupState.QuizState.CONTINUE_QUIZ: [MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._continueQuizCommandHandler)],
+                        BotUserSetupState.QuizState.SELECT_QUIZ: [
+                            MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectQuizCommandHandler),
+                            CommandHandler(BotCommand.Quiz.EXIT, callback=self._exitFromQuizCommandHandler)
+                        ],
+                        BotUserSetupState.QuizState.CONTINUE_QUIZ: [
+                            MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._continueQuizCommandHandler),
+                            CommandHandler(BotCommand.Quiz.EXIT, callback=self._exitFromQuizCommandHandler)
+                        ],
                     },
                     fallbacks=[],
                     map_to_parent={
-                        QuizBotUserSetupState.QuizState.QUIZ_IS_COMPLETED: QuizBotUserSetupState.HOME
+                        BotUserSetupState.QuizState.QUIZ_IS_COMPLETED: BotUserSetupState.HOME,
+                        BotUserSetupState.QuizState.QUIZ_IS_CANCELLED: BotUserSetupState.HOME
                     }
                 )],
 
@@ -88,16 +99,18 @@ class QuizBotClient:
 
         if userProfile is None:
             await update.effective_message.reply_text(f"Схоже я тебе ще не знаю 🤔\n\nСкористайся командою /{BotCommand.USER_SETUP} щоб налаштувати свій акаунт")
-            return QuizBotUserSetupState.HOME
+            return BotUserSetupState.HOME
 
         await update.message.reply_text(text=self._getUserProfileSummaryText(userProfile))
 
-        return QuizBotUserSetupState.HOME
+        return BotUserSetupState.HOME
 
     def _getUserProfileSummaryText(self, userProfile: UserProfile):
         academicYear = self._academicYearService.getCurrentAcademicYear()
         gradeYear = self._gradeYearService.get(userProfile.gradeYearId, academicYear.year)
-        return f"{userProfile.fullName}\n{gradeYear.code} клас\n\nЯкщо треба змінити свої дані скористайся командою /{BotCommand.USER_SETUP}"
+        return (f"{userProfile.fullName}\n{gradeYear.code} клас\n\n"
+                f"Якщо треба змінити свої дані - скористайся командою /{BotCommand.USER_SETUP}\n"
+                f"Якщо хочеш вже почати роботу над тестами - тицяй /{BotCommand.QUIZ}")
 
     async def _userSetupCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userInfo = update.message.from_user
@@ -106,7 +119,7 @@ class QuizBotClient:
         userProfile = self._userProfileService.searchById(userId)
 
         if userProfile is None:
-            userProfile = UserProfile(id=userId, firstName=userInfo.first_name, lastName=userInfo.last_name, gradeYearId="")
+            userProfile = UserProfile(id=userId, firstName=userInfo.first_name, lastName=userInfo.last_name, gradeYearId="", userName=update.message.from_user.name)
 
         context.user_data[UserDataKey.USER_PROFILE] = userProfile
 
@@ -118,7 +131,7 @@ class QuizBotClient:
 
         await update.message.reply_text(text="Вкажи будь ласка свій клас", reply_markup=keyboard)
 
-        return QuizBotUserSetupState.USER_SETUP
+        return BotUserSetupState.USER_SETUP
 
     async def _selectGradeYearIdCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userProfile = context.user_data[UserDataKey.USER_PROFILE]
@@ -133,7 +146,7 @@ class QuizBotClient:
             keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
 
             await update.effective_message.reply_text(text=f"Хм.. Схоже {gradeYearCode} не існує 🤔. Спробуй ще раз.", reply_markup=keyboard)
-            return QuizBotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID
+            return BotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID
 
         userProfile.gradeYearId = gradeYear.id
         self._userProfileService.save(userProfile)
@@ -143,7 +156,7 @@ class QuizBotClient:
 
         await update.effective_message.reply_text(text=f"Тепер вкажи яке твоє ім'я", reply_markup=keyboard)
 
-        return QuizBotUserSetupState.UserSetupState.ASK_FOR_FIRST_NAME
+        return BotUserSetupState.UserSetupState.ASK_FOR_FIRST_NAME
 
     async def _selectUserFirstNameCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userProfile = context.user_data[UserDataKey.USER_PROFILE]
@@ -155,7 +168,7 @@ class QuizBotClient:
         keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
         await update.effective_message.reply_text(text=f"І яке твоє прізвище?", reply_markup=keyboard)
 
-        return QuizBotUserSetupState.UserSetupState.ASK_FOR_LAST_NAME
+        return BotUserSetupState.UserSetupState.ASK_FOR_LAST_NAME
 
     async def _selectUserLastNameCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userProfile = context.user_data[UserDataKey.USER_PROFILE]
@@ -165,27 +178,60 @@ class QuizBotClient:
         await update.effective_message.reply_text(text=f"Дякую!")
         await update.effective_message.reply_text(text=f"Твій профіль\n\n{self._getUserProfileSummaryText(userProfile)}")
 
-        return QuizBotUserSetupState.UserSetupState.USER_IS_CONFIGURED
+        return BotUserSetupState.UserSetupState.USER_IS_CONFIGURED
 
     async def _startCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         startMessageContent = f"Вітаю у боті для проходження різних тестів з інформатики 👀\n\nТисни /{BotCommand.HELP} що переглянути доступні команди."
         await update.effective_message.reply_text(startMessageContent)
 
-        return QuizBotUserSetupState.HOME
+        return BotUserSetupState.HOME
+
+    async def _showCompletedQuizzesCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        userProfile = self._userProfileService.searchById(str(update.message.from_user.id))
+
+        if not userProfile:
+            await update.effective_message.reply_text(text=f"Я не знаю хто ти 💀.\n\n"
+                                                           f"Скористайся командою /{BotCommand.USER_SETUP} щоб засетапити свій профіль")
+            return BotUserSetupState.HOME
+
+        completedQuizzes = self._completedQuizService.searchByUser(userProfile.id)
+
+        if len(completedQuizzes) == 0:
+            await update.effective_message.reply_text(text="Ти ще нічого не проходив\n\n"
+                                                           f"Почати проходити тести - /{BotCommand.QUIZ}")
+            return BotUserSetupState.HOME
+
+        for quiz in completedQuizzes:
+            await update.effective_message.reply_text(text=f"Тест '{quiz.topic}' пройдено {quiz.completedDate.strftime('%d/%m/%Y')}\n"
+                                                           f"Оцінка: {quiz.mark} {quiz.fancyMarkSign}")
+
+        return BotUserSetupState.HOME
 
     async def _showQuizzesCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userProfile = self._userProfileService.searchById(str(update.message.from_user.id))
-        quizzes = [x for x in self._quizzesService.searchByGradeYear(userProfile.gradeYearId) if x.isAvailable]
+
+        if not userProfile:
+            await update.effective_message.reply_text(text=f"Я не знаю хто ти 💀.\n\n"
+                                                           f"Скористайся командою /{BotCommand.USER_SETUP} щоб засетапити свій профіль")
+            return BotUserSetupState.HOME
+
+        completedQuizzesIds = [x.id for x in self._completedQuizService.searchByUser(userProfile.id)]
+
+        quizzes = [x for x in self._quizzesService.searchByGradeYear(userProfile.gradeYearId) if x.isAvailable and x.id not in completedQuizzesIds]
 
         if len(quizzes) == 0:
             await update.effective_message.reply_text(text="Тестів ще немає для тебе, можеш видихнути 🙂‍↕️")
-            return QuizBotUserSetupState.HOME
+            return BotUserSetupState.HOME
 
         buttons = [[KeyboardButton(text=x.topic) for x in quizzes]]
         keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
 
         await update.effective_message.reply_text(text=f"Вибери тест", reply_markup=keyboard)
-        return QuizBotUserSetupState.QUIZ
+        return BotUserSetupState.QUIZ
+
+    async def _exitFromQuizCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        await update.effective_message.reply_text(text="Виходимо з тестування. \nТвій процес не збережено 😀.")
+        return BotUserSetupState.QuizState.QUIZ_IS_CANCELLED
 
     def _buildQuizAnswerBotResponse(self, quiz: Quiz, questionIndex: int) -> (str, ReplyKeyboardMarkup):
         question = quiz.questions[questionIndex]
@@ -202,7 +248,7 @@ class QuizBotClient:
 
         if quiz is None:
             await self._showQuizzesCommandHandler(update, context)
-            return QuizBotUserSetupState.QuizState.SELECT_QUIZ
+            return BotUserSetupState.QuizState.SELECT_QUIZ
 
         questionIndex = 0
 
@@ -213,7 +259,7 @@ class QuizBotClient:
         questionDetails = self._buildQuizAnswerBotResponse(quiz, questionIndex)
 
         await update.effective_message.reply_text(text=questionDetails[0], reply_markup=questionDetails[1])
-        return QuizBotUserSetupState.QuizState.CONTINUE_QUIZ
+        return BotUserSetupState.QuizState.CONTINUE_QUIZ
 
     async def _continueQuizCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userAnswer = update.effective_message.text
@@ -238,7 +284,7 @@ class QuizBotClient:
             completedQuiz = CompletedQuizBuilder.buildFromQuizAndUserAnswers(quiz, userAnswers, str(update.effective_message.from_user.id))
             self._completedQuizService.save(completedQuiz)
 
-            await update.effective_message.reply_text(f"Вітаю, ти закінчив тест {quiz.topic}!\n\nТвоя оціка {completedQuiz.mark}!")
+            await update.effective_message.reply_markdown_v2(f"Вітаю, ти закінчив тест {quiz.topic}\\!\n\nТвоя оціка ||{completedQuiz.mark}|| {completedQuiz.fancyMarkSign}\\!")
 
             await update.effective_message.reply_text("Твої відповіді ⬇️")
 
@@ -247,20 +293,20 @@ class QuizBotClient:
                                                           f"\n\nПравильна відповідь:\n{'\n'.join([f' - {x}' for x in question.correctAnswers])}"
                                                           f"\n\nТвоя відповідь:\n{'\n'.join([f' - {x}' for x in question.userAnswers])}")
 
-            return QuizBotUserSetupState.QuizState.QUIZ_IS_COMPLETED
+            return BotUserSetupState.QuizState.QUIZ_IS_COMPLETED
 
         context.user_data[UserDataKey.QUESTION_INDEX] = questionIndex
         questionDetails = self._buildQuizAnswerBotResponse(quiz, questionIndex)
         await update.effective_message.reply_text(text=questionDetails[0], reply_markup=questionDetails[1])
-        return QuizBotUserSetupState.QuizState.CONTINUE_QUIZ
+        return BotUserSetupState.QuizState.CONTINUE_QUIZ
 
     async def _helpCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         helpMessageContent = readFile("bot-help.md")
         await update.effective_message.reply_markdown_v2(helpMessageContent)
-        return QuizBotUserSetupState.HOME
+        return BotUserSetupState.HOME
 
 
-class QuizBotUserSetupState:
+class BotUserSetupState:
     HOME = 0
     QUIZ = 1
     USER_SETUP = 2
@@ -269,6 +315,7 @@ class QuizBotUserSetupState:
         CONTINUE_QUIZ = 101
         SELECT_QUIZ = 102
         QUIZ_IS_COMPLETED = 103
+        QUIZ_IS_CANCELLED = 104
 
     class UserSetupState:
         ASK_FOR_GRADE_YEAR_ID = 201
@@ -291,3 +338,7 @@ class BotCommand:
     USER_SETUP = "user_setup"
     WHO_AM_I = "who_am_i"
     QUIZ = "quiz"
+    COMPLETED_QUIZZES = "completed_quizzes"
+
+    class Quiz:
+        EXIT = "exit"

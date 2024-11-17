@@ -7,6 +7,7 @@ class UserProfile:
     firstName: str
     lastName: str
     gradeYearId: str
+    userName: str
 
     @property
     def fullName(self) -> str:
@@ -19,6 +20,7 @@ class UserProfile:
             firstName=value["firstName"],
             lastName=value["lastName"],
             gradeYearId=value["gradeYearId"],
+            userName=value["userName"],
         )
 
     def toDict(self) -> dict:
@@ -27,6 +29,7 @@ class UserProfile:
             "firstName": self.firstName,
             "lastName": self.lastName,
             "gradeYearId": self.gradeYearId,
+            "userName": self.userName,
         }
 
     def __str__(self):
