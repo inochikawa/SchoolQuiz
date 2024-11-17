@@ -1,15 +1,15 @@
-from data.services.QuizService import QuizService
-from data.models.quiz.Quiz import Quiz
-from data.models.quiz.QuizAnswerOption import QuizAnswerOption
-from data.models.quiz.QuizQuestion import QuizQuestion
-from data.models.quiz.MediaItem import MediaItem
-from data.models.quiz.MediaItemType import MediaItemType
+from data.services import QuizService
+from data.models.quiz import Quiz
+from data.models.quiz import QuizAnswerOption
+from data.models.quiz import QuizQuestion
+from data.models.quiz import MediaItem
+from data.models.quiz import MediaItemType
 import json
 import yaml
 from uuid import uuid4
 import argparse
 
-from extensions import FileExtensions
+from extensions import readFile
 
 
 def parseArgs() -> argparse.Namespace:
@@ -25,7 +25,7 @@ def parseArgs() -> argparse.Namespace:
 def createQuizTemplate(totalQuestions: int, defaultNumberOfAnswers: int, classCode: str) -> dict:
     return Quiz(
         id="",
-        classCode=classCode,
+        gradeYearId="",
         questions=[QuizQuestion(
             id="",
             question="REPLACE",
@@ -38,11 +38,13 @@ def createQuizTemplate(totalQuestions: int, defaultNumberOfAnswers: int, classCo
 
 def saveNewQuiz(yamlPath: str) -> None:
     quizService = QuizService()
-    content = FileExtensions.readFile(yamlPath)
+    content = readFile(yamlPath)
     quizData = yaml.safe_load(content)
     quiz = Quiz.fromDict(quizData)
 
     quiz.id = str(uuid4())
+    quiz.gradeYearId = "2024_11А"
+    quiz.topic = "Some interesting topic"
 
     for question in quiz.questions:
         question.id = str(uuid4())
