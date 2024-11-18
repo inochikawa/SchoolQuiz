@@ -1,9 +1,8 @@
-from azure.cosmos import PartitionKey
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from data.cosmosDb import QuizCosmosClient, UserProfileContainer
 from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
 from data.models import UserProfile
-from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 
 class UserProfileService:

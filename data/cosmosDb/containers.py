@@ -14,11 +14,6 @@ class GradeYearsContainer(ContainerBase):
     partitionKey = "/academicYear"
 
 
-class UserAnswersContainer(ContainerBase):
-    name = "user-answers"
-    partitionKey = "/quizId"
-
-
 class UserProfileContainer(ContainerBase):
     name = "user-profiles"
     partitionKey = "/gradeYearId"
@@ -39,7 +34,6 @@ def getContainerConfigs() -> list[ContainerBase]:
     return [
         QuizContainer(),
         GradeYearsContainer(),
-        UserAnswersContainer(),
         UserProfileContainer(),
         AcademicYearsContainer(),
         CompletedQuizzesContainer()

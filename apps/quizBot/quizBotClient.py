@@ -1,15 +1,14 @@
 import os
 from datetime import datetime, timezone
 
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, MenuButtonCommands
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 
 from data.bilders import CompletedQuizBuilder
 from data.models import UserProfile, UserAnswer
-from data.models.quiz import Quiz, CompletedQuiz
+from data.models.quiz import Quiz
 from data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
-from extensions import readFile, writeToFile
-import yaml
+from extensions import readFile
 
 
 class QuizBotClient:
@@ -148,7 +147,11 @@ class QuizBotClient:
             await update.effective_message.reply_text(text=f"Хм.. Схоже {gradeYearCode} не існує 🤔. Спробуй ще раз.", reply_markup=keyboard)
             return BotUserSetupState.UserSetupState.ASK_FOR_GRADE_YEAR_ID
 
-        self._userProfileService.delete(userProfile.id, userProfile.gradeYearId)
+        try:
+            self._userProfileService.delete(userProfile.id, userProfile.gradeYearId)
+        except:
+            pass  # just ignore
+
         userProfile.gradeYearId = gradeYear.id
         self._userProfileService.save(userProfile)
 
