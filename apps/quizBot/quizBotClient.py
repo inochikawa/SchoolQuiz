@@ -246,7 +246,7 @@ class QuizBotClient:
     def _buildQuizAnswerBotResponse(self, quiz: Quiz, questionIndex: int) -> (str, ReplyKeyboardMarkup):
         question = quiz.questions[questionIndex]
 
-        buttons = [[KeyboardButton(text=x.text)] for x in question.answerOptions]
+        buttons = [[KeyboardButton(text=x.text or "")] for x in question.answerOptions]
         keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
 
         return f"{question.question} (+{question.points} б)", keyboard
