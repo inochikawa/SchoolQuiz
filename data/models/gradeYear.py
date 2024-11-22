@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class GradeYear:
     code: str
+    number: int
     academicYear: int
 
     @property
@@ -14,6 +15,7 @@ class GradeYear:
     def fromDict(value: dict):
         return GradeYear(
             code=value["code"],
+            number=value["number"],
             academicYear=int(value["academicYear"]),
         )
 
@@ -21,6 +23,7 @@ class GradeYear:
         return {
             "id": self.id,
             "code": self.code,
+            "number": self.number,
             "academicYear": str(self.academicYear),
         }
 
