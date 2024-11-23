@@ -3,7 +3,7 @@ import logging
 from azure.cosmos import CosmosClient, ContainerProxy, PartitionKey
 import os
 
-from data.cosmosDb.containers import ContainerBase
+from src.data.cosmosDb.containers import ContainerBase
 
 
 class QuizCosmosClient:

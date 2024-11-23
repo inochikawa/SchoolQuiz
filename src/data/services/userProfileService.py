@@ -1,8 +1,8 @@
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
-from data.cosmosDb import QuizCosmosClient, UserProfileContainer
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
-from data.models import UserProfile
+from src.data.cosmosDb import QuizCosmosClient, UserProfileContainer
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+from src.data.models import UserProfile
 
 
 class UserProfileService:

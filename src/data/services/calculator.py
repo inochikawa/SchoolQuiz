@@ -1,6 +1,6 @@
-from data.models.quiz.quiz import Quiz
-from data.models.quiz.quizQuestion import QuizQuestion
-from data.models.userAnswer import UserAnswer
+from src.data.models.quiz.quiz import Quiz
+from src.data.models.quiz.quizQuestion import QuizQuestion
+from src.data.models.userAnswer import UserAnswer
 
 
 def getQuizMark(quiz: Quiz, userAnswers: list[UserAnswer], maxMarkPoint: int = 12) -> int:

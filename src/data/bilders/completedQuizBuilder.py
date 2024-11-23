@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
-from data.models import UserAnswer
-from data.models.quiz import Quiz
-from data.models.quiz.completedQuiz import CompletedQuizQuestion, CompletedQuiz
-from data.services.calculator import getQuizMark, getQuizQuestionPoints
+from src.data.models import UserAnswer
+from src.data.models.quiz import Quiz
+from src.data.models.quiz.completedQuiz import CompletedQuizQuestion, CompletedQuiz
+from src.data.services.calculator import getQuizMark, getQuizQuestionPoints
 
 
 class CompletedQuizBuilder:

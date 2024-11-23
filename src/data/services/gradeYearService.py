@@ -1,6 +1,6 @@
-from data.cosmosDb import QuizCosmosClient, GradeYearsContainer
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
-from data.models import GradeYear
+from src.data.cosmosDb import QuizCosmosClient, GradeYearsContainer
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+from src.data.models import GradeYear
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 

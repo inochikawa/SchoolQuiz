@@ -1,4 +1,4 @@
-from data.models import UserProfile
+from src.data.models import UserProfile
 
 
 class UserProfileBuilder:

@@ -4,11 +4,11 @@ from datetime import datetime, timezone
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 
-from data.bilders import CompletedQuizBuilder
-from data.models import UserProfile, UserAnswer
-from data.models.quiz import Quiz
-from data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
-from extensions import readFile
+from src.data.bilders import CompletedQuizBuilder
+from src.data.models import UserProfile, UserAnswer
+from src.data.models.quiz import Quiz
+from src.data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
+from src.extensions import readFile
 
 
 class QuizBotClient:

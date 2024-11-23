@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from data.cosmosDb import QuizCosmosClient, AcademicYearsContainer
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
-from data.models import AcademicYear
+from src.data.cosmosDb import QuizCosmosClient, AcademicYearsContainer
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+from src.data.models import AcademicYear
 
 
 class AcademicYearService:
