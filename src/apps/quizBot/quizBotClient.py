@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 
+from src.apps.quizBot.pathProvider import getFileAbsolutePath
 from src.data.bilders import CompletedQuizBuilder
 from src.data.models import UserProfile, UserAnswer
 from src.data.models.quiz import Quiz
@@ -36,7 +37,8 @@ class QuizBotClient:
         self._application.add_handler(ConversationHandler(
             entry_points=[
                 CommandHandler(BotCommand.START, self._startCommandHandler),
-                CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler)
+                CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler),
+                MessageHandler(filters=filters.TEXT, callback=self._botRestartHandler)
             ],
             states={
                 BotUserSetupState.HOME: [
@@ -196,6 +198,13 @@ class QuizBotClient:
 
         return BotUserSetupState.HOME
 
+
+    async def _botRestartHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        startMessageContent = f"Схоже мене перезапускали 🤷. \n\nТисни /{BotCommand.START}, щоб почати роботу зі мною знову."
+        await update.effective_message.reply_text(startMessageContent)
+
+        return BotUserSetupState.HOME
+
     async def _showCompletedQuizzesCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         userProfile = self._userProfileService.searchById(str(update.message.from_user.id))
 
@@ -311,7 +320,7 @@ class QuizBotClient:
         return BotUserSetupState.QuizState.CONTINUE_QUIZ
 
     async def _helpCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        helpMessageContent = readFile("bot-help.md")
+        helpMessageContent = readFile(getFileAbsolutePath("./bot-help.md"))
         await update.effective_message.reply_markdown_v2(helpMessageContent)
         return BotUserSetupState.HOME
 
