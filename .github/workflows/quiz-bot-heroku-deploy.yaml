@@ -31,6 +31,7 @@ jobs:
 
       - name: "Build Docker image"
         run: |
+          docker image pull python:3
           docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd6 ./
 
       - name: "Push Docker image to Heroku"
