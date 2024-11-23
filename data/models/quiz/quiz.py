@@ -48,8 +48,6 @@ class Quiz:
             "gradeYearId": self.gradeYearId,
             "topic": self.topic,
             "questions": list(map(lambda x: x.toDict(), self.questions)),
-            "availableToDate": self.availableToDate.isoformat() if self.availableToDate else None,
-            "availableFromDate": self.availableFromDate.isoformat() if self.availableFromDate else None,
+            "availableToDate": self.availableToDate.isoformat() if self.availableToDate is not None else None,
+            "availableFromDate": self.availableFromDate.isoformat() if self.availableFromDate is not None else None,
         }
-
-
