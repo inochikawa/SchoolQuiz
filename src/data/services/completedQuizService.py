@@ -1,8 +1,8 @@
 from datetime import datetime, date
 
-from data.cosmosDb import QuizCosmosClient, CompletedQuizzesContainer
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
-from data.models.quiz.completedQuiz import CompletedQuiz
+from src.data.cosmosDb import QuizCosmosClient, CompletedQuizzesContainer
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+from src.data.models.quiz.completedQuiz import CompletedQuiz
 
 
 class CompletedQuizService:

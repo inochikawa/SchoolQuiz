@@ -4,8 +4,8 @@ from uuid import uuid4
 import customtkinter
 import yaml
 
-from data.models.quiz import Quiz
-from data.services import AcademicYearService, GradeYearService, QuizService
+from src.data.models.quiz import Quiz
+from src.data.services import AcademicYearService, GradeYearService, QuizService
 
 
 class DateRangeFrame(customtkinter.CTkFrame):

@@ -5,7 +5,7 @@ import csv
 import customtkinter
 import subprocess
 
-from data.services import CompletedQuizService, UserProfileService, GradeYearService
+from src.data.services import CompletedQuizService, UserProfileService, GradeYearService
 
 
 class QuizzesReportFrame(customtkinter.CTkFrame):

@@ -1,6 +1,6 @@
-from data.cosmosDb import QuizCosmosClient, QuizContainer
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
-from data.models.quiz import Quiz
+from src.data.cosmosDb import QuizCosmosClient, QuizContainer
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+from src.data.models.quiz import Quiz
 
 
 class QuizService:

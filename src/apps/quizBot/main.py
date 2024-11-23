@@ -1,8 +1,16 @@
-import logging
+import os
+import sys
+from dotenv import load_dotenv
 
-from apps.quizBot.quizBotClient import QuizBotClient
-from data.cosmosDb.containers import getContainerConfigs
-from data.cosmosDb.quizCosmosClient import getQuizCosmosClient
+# insert root directory into python module search path
+rootPath = os.path.dirname(os.path.realpath(__file__ + "./../../../"))
+sys.path.insert(0, rootPath)
+load_dotenv()
+
+import logging
+from src.apps.quizBot.quizBotClient import QuizBotClient
+from src.data.cosmosDb.containers import getContainerConfigs
+from src.data.cosmosDb.quizCosmosClient import getQuizCosmosClient
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
