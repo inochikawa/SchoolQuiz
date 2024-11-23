@@ -1,0 +1,42 @@
+name: "Build and Deploy to Heroku"
+
+on:
+  push:
+    branches:
+      - main
+        
+env:
+  HEROKU_USERNAME: ${{ secrets.HEROKU_API_KEY }}
+  HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  COSMOSDB_ACCOUNT_KEY: ${{ secrets.COSMOSDB_ACCOUNT_KEY }}
+  COSMOSDB_ACCOUNT_URI: ${{ secrets.COSMOSDB_ACCOUNT_URI }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout code"
+        uses: "actions/checkout@v3"
+
+      - name: "Set up Python"
+        uses: "actions/setup-python@v4"
+        with:
+          python-version: 3.13
+
+      - name: "Login to Heroku Container Registry"
+        run: |
+          docker login --username=${{ env.HEROKU_USERNAME }} --password=${{ env.HEROKU_API_KEY }} registry.heroku.com
+
+      - name: "Build Docker image"
+        run: |
+          docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd6 ./
+
+      - name: "Push Docker image to Heroku"
+        run: |
+          docker push registry.heroku.com/school-quiz-tg-bot/bot
+
+      - name: Release the application on Heroku
+        run: |
+          heroku container:release web --app ${{ env.HEROKU_APP_NAME }}
