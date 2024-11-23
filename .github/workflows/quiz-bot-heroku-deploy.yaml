@@ -27,7 +27,7 @@ jobs:
 
       - name: "Build Docker image"
         run: |
-          docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd6 ./
+          docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd64 ./
 
       - name: "Push Docker image to Heroku"
         run: |
