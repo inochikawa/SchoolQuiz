@@ -6,6 +6,8 @@ on:
       - main
         
 env:
+  HEROKU_APP_NAME: "school-quiz-tg-bot"
+  HEROKU_APP_PROCESS_NAME: "bot"
   HEROKU_USERNAME: ${{ secrets.HEROKU_API_KEY }}
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
   COSMOSDB_ACCOUNT_KEY: ${{ secrets.COSMOSDB_ACCOUNT_KEY }}
@@ -27,12 +29,12 @@ jobs:
 
       - name: "Build Docker image"
         run: |
-          docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd64 ./
+          docker build -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/${{ env.HEROKU_APP_PROCESS_NAME }} -f src/apps/quizBot/Dockerfile  --platform linux/amd64 ./
 
       - name: "Push Docker image to Heroku"
         run: |
-          docker push registry.heroku.com/school-quiz-tg-bot/bot
+          docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/${{ env.HEROKU_APP_PROCESS_NAME }}
 
       - name: Release the application on Heroku
         run: |
-          heroku container:release web --app ${{ env.HEROKU_APP_NAME }}
+          heroku container:release ${{ env.HEROKU_APP_PROCESS_NAME }} --app ${{ env.HEROKU_APP_NAME }}
