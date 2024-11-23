@@ -14,16 +14,12 @@ env:
           
 jobs:
   deploy:
+    name: "Build and Deploy"
     runs-on: ubuntu-latest
 
     steps:
       - name: "Checkout code"
         uses: "actions/checkout@v3"
-
-      - name: "Set up Python"
-        uses: "actions/setup-python@v4"
-        with:
-          python-version: 3.13
 
       - name: "Login to Heroku Container Registry"
         run: |
@@ -31,7 +27,6 @@ jobs:
 
       - name: "Build Docker image"
         run: |
-          docker image pull python:3
           docker build -t registry.heroku.com/school-quiz-tg-bot/bot -f src/apps/quizBot/Dockerfile  --platform linux/amd6 ./
 
       - name: "Push Docker image to Heroku"
