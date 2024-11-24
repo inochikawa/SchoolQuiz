@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone, timedelta
 
 import os
@@ -48,7 +49,15 @@ class QuizzesReportFrame(customtkinter.CTkFrame):
             userService = UserProfileService()
             gradeYearService = GradeYearService()
 
-            startDate = datetime.fromisoformat(reportDateStr).date() if reportDateStr and reportDateStr != "" else datetime.now(tz=timezone.utc).date()
+            reportDateTime = datetime.fromisoformat(reportDateStr) if reportDateStr and reportDateStr != "" else datetime.now(
+                tz=timezone.utc)
+
+            if reportDateTime.time().isoformat() == "00:00:00":
+                currentTime = datetime.now().time()
+                reportDateTime += timedelta(hours=currentTime.hour, minutes=currentTime.minute, seconds=currentTime.second,
+                                            microseconds=currentTime.microsecond)
+
+            startDate = reportDateTime.astimezone(tz=timezone.utc).date()
             endDate = startDate + timedelta(days=1)
 
             items = service.searchByCompletedDate(startDate, endDate)
