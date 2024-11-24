@@ -4,12 +4,14 @@ from datetime import datetime, timezone
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 
+from src.apps.quizBot import markdownHelper
 from src.apps.quizBot.pathProvider import getFileAbsolutePath
 from src.data.bilders import CompletedQuizBuilder
 from src.data.models import UserProfile, UserAnswer
 from src.data.models.quiz import Quiz
 from src.data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
 from src.extensions import readFile
+import tempfile
 
 
 class QuizBotClient:
@@ -198,7 +200,6 @@ class QuizBotClient:
 
         return BotUserSetupState.HOME
 
-
     async def _botRestartHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         startMessageContent = f"Схоже мене перезапускали 🤷. \n\nТисни /{BotCommand.START}, щоб почати роботу зі мною знову."
         await update.effective_message.reply_text(startMessageContent)
@@ -258,7 +259,7 @@ class QuizBotClient:
         buttons = [[KeyboardButton(text=x.text or "")] for x in question.answerOptions]
         keyboard = ReplyKeyboardMarkup(buttons, one_time_keyboard=True)
 
-        return f"{question.question} (+{question.points} б)", keyboard
+        return f"({questionIndex + 1}/{len(quiz.questions)}) {question.question}", keyboard
 
     async def _selectQuizCommandHandler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         quizTopic = update.message.text
@@ -303,14 +304,28 @@ class QuizBotClient:
             completedQuiz = CompletedQuizBuilder.buildFromQuizAndUserAnswers(quiz, userAnswers, str(update.effective_message.from_user.id))
             self._completedQuizService.save(completedQuiz)
 
-            await update.effective_message.reply_markdown_v2(f"Вітаю, ти закінчив тест {quiz.topic}\\!\n\nТвоя оціка ||{completedQuiz.mark}|| {completedQuiz.fancyMarkSign}\\!")
+            spaces = ' ' * 10
+            replyText = (markdownHelper.escapeCharacters(f"Вітаю, ти закінчив(ла) тест {completedQuiz.topic}!")
+                         + f"\n\nТвоя оціка ||{spaces}{completedQuiz.mark}{spaces}|| {completedQuiz.fancyMarkSign}\\!")
+
+            await update.effective_message.reply_markdown_v2(replyText)
 
             await update.effective_message.reply_text("Твої відповіді ⬇️")
 
-            for question in completedQuiz.questions:
-                await update.effective_message.reply_text(f"Питання:\n{question.question}"
-                                                          f"\n\nПравильна відповідь:\n{'\n'.join([f' - {x}' for x in question.correctAnswers])}"
-                                                          f"\n\nТвоя відповідь:\n{'\n'.join([f' - {x}' for x in question.userAnswers])}")
+            with tempfile.TemporaryDirectory() as temp_dir:
+                tempFileName = "answers.txt"
+                tempFilePath = os.path.join(temp_dir, tempFileName)
+                with open(tempFilePath, "w") as tempFile:
+                    for question in completedQuiz.questions:
+                        tempFile.write(f"Питання:\n{question.question}"
+                                       f"\n\nПравильна відповідь:\n{'\n'.join([f' - {x}' for x in question.correctAnswers])}"
+                                       f"\n\nТвоя відповідь:\n{'\n'.join([f' - {x}' for x in question.userAnswers])}"
+                                       f"\n\n"
+                                       f"{'-' * 50}"
+                                       f"\n\n")
+
+                with open(tempFilePath, "rb") as tempFile:
+                    await update.effective_message.reply_document(tempFile.read(), filename=tempFileName)
 
             return BotUserSetupState.QuizState.QUIZ_IS_COMPLETED
 
