@@ -9,6 +9,7 @@ from src.apps.quizBot.pathProvider import getFileAbsolutePath
 from src.data.bilders import CompletedQuizBuilder
 from src.data.models import UserProfile, UserAnswer
 from src.data.models.quiz import Quiz
+from src.data.models.userProfile import UserProfileSettings
 from src.data.services import UserProfileService, GradeYearService, QuizService, AcademicYearService, CompletedQuizService
 from src.extensions import readFile
 import tempfile
@@ -36,21 +37,19 @@ class QuizBotClient:
     def _setupTelegramApp(self) -> None:
         self._application = Application.builder().token(self._telegramToken).build()
 
+        entryCommands = [
+            MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._helpCommandHandler),
+            CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler),
+            CommandHandler(BotCommand.USER_SETUP, self._userSetupCommandHandler),
+            CommandHandler(BotCommand.WHO_AM_I, self._whoAmICommandHandler),
+            CommandHandler(BotCommand.QUIZ, callback=self._showQuizzesCommandHandler),
+            CommandHandler(BotCommand.COMPLETED_QUIZZES, callback=self._showCompletedQuizzesCommandHandler)
+        ]
+
         self._application.add_handler(ConversationHandler(
-            entry_points=[
-                CommandHandler(BotCommand.START, self._startCommandHandler),
-                CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler),
-                MessageHandler(filters=filters.TEXT, callback=self._botRestartHandler)
-            ],
+            entry_points=entryCommands,
             states={
-                BotUserSetupState.HOME: [
-                    MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._helpCommandHandler),
-                    CommandHandler(BotCommand.HELP, callback=self._helpCommandHandler),
-                    CommandHandler(BotCommand.USER_SETUP, self._userSetupCommandHandler),
-                    CommandHandler(BotCommand.WHO_AM_I, self._whoAmICommandHandler),
-                    CommandHandler(BotCommand.QUIZ, callback=self._showQuizzesCommandHandler),
-                    CommandHandler(BotCommand.COMPLETED_QUIZZES, callback=self._showCompletedQuizzesCommandHandler)
-                ],
+                BotUserSetupState.HOME: entryCommands,
                 BotUserSetupState.USER_SETUP: [ConversationHandler(
                     entry_points=[MessageHandler(filters=filters.TEXT & ~filters.COMMAND, callback=self._selectGradeYearIdCommandHandler)],
                     states={
@@ -122,7 +121,18 @@ class QuizBotClient:
         userProfile = self._userProfileService.searchById(userId)
 
         if userProfile is None:
-            userProfile = UserProfile(id=userId, firstName=userInfo.first_name, lastName=userInfo.last_name, gradeYearId="", userName=update.message.from_user.name)
+            userProfile = UserProfile(
+                id=userId,
+                firstName=userInfo.first_name,
+                lastName=userInfo.last_name,
+                gradeYearId="",
+                userName=update.message.from_user.name,
+                settings=UserProfileSettings(canViewAnswers=True, canEditProfile=True)
+            )
+
+        if not userProfile.settings.canEditProfile:
+            await update.message.reply_text(text="Тобі не можна редагувати свій профіль. Звернись до вчителя про допомогу.")
+            return BotUserSetupState.HOME
 
         context.user_data[UserDataKey.USER_PROFILE] = userProfile
 
@@ -310,22 +320,25 @@ class QuizBotClient:
 
             await update.effective_message.reply_markdown_v2(replyText)
 
-            await update.effective_message.reply_text("Твої відповіді ⬇️")
+            userProfile = self._userProfileService.get(userId=str(update.effective_message.from_user.id), gradeYearId=quiz.gradeYearId)
 
-            with tempfile.TemporaryDirectory() as temp_dir:
-                tempFileName = "answers.txt"
-                tempFilePath = os.path.join(temp_dir, tempFileName)
-                with open(tempFilePath, "w") as tempFile:
-                    for question in completedQuiz.questions:
-                        tempFile.write(f"Питання:\n{question.question}"
-                                       f"\n\nПравильна відповідь:\n{'\n'.join([f' - {x}' for x in question.correctAnswers])}"
-                                       f"\n\nТвоя відповідь:\n{'\n'.join([f' - {x}' for x in question.userAnswers])}"
-                                       f"\n\n"
-                                       f"{'-' * 50}"
-                                       f"\n\n")
+            if userProfile.settings.canViewAnswers:
+                await update.effective_message.reply_text("Твої відповіді ⬇️")
 
-                with open(tempFilePath, "rb") as tempFile:
-                    await update.effective_message.reply_document(tempFile.read(), filename=tempFileName)
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    tempFileName = "answers.txt"
+                    tempFilePath = os.path.join(temp_dir, tempFileName)
+                    with open(tempFilePath, "w") as tempFile:
+                        for question in completedQuiz.questions:
+                            tempFile.write(f"Питання:\n{question.question}"
+                                           f"\n\nПравильна відповідь:\n{'\n'.join([f' - {x}' for x in question.correctAnswers])}"
+                                           f"\n\nТвоя відповідь:\n{'\n'.join([f' - {x}' for x in question.userAnswers])}"
+                                           f"\n\n"
+                                           f"{'-' * 50}"
+                                           f"\n\n")
+
+                    with open(tempFilePath, "rb") as tempFile:
+                        await update.effective_message.reply_document(tempFile.read(), filename=tempFileName)
 
             return BotUserSetupState.QuizState.QUIZ_IS_COMPLETED
 
